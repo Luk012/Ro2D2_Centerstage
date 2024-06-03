@@ -744,7 +744,7 @@ public class BlueFar extends LinearOpMode {
                     {
                         r.collect.setPower(1);
                         preload.reset();
-                        extendo.CS = extendoController.extendoStatus.PURPLE;
+                        //extendo.CS = extendoController.extendoStatus.PURPLE;
                         collectAngle.CS = collectAngleController.collectAngleStatus.COLLECT;
                         redFarAutoController.CurrentStatus = RedFarAutoController.autoControllerStatus.PURPLE_DROP;
                         status = STROBOT.COLLECT_PURPLE;
@@ -758,7 +758,7 @@ public class BlueFar extends LinearOpMode {
                     {
 
                         collectAngle.CS = collectAngleController.collectAngleStatus.DRIVE;
-                        extendo.CS = extendoController.extendoStatus.RETRACTED;
+                        //extendo.CS = extendoController.extendoStatus.RETRACTED;
                         verif.reset();
                         status = STROBOT.GO_SCORE_YELLOW;
                     } else if(preload.seconds() > 1 && tries <3 && (r.pixelLeft.getState() || r.pixelRight.getState()))
@@ -1496,6 +1496,8 @@ public class BlueFar extends LinearOpMode {
 //            telemetry.addData("robotcontroller", RedFarAutoController.CurrentStatus);
             telemetry.addData("realpoz", r.extendoLeft.getCurrentPosition());
             telemetry.addData("targetpoz", extendo.activePID.targetValue);
+            telemetry.addData("targetAprilTag", desieredtag);
+            telemetry.addData("did it see?", diditsee);
 //            telemetry.addData("extendo x", extendoController.x);
 //            telemetry.addData("extendi", extendo.CS);
 //            telemetry.addData("failsafe", org.firstinspires.ftc.teamcode.Auto.AutoControllers.failsafe.CurrentStatus);
