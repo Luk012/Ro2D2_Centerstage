@@ -524,7 +524,7 @@ public class RedFarAutoController {
                     switch (claw_caz)
                     {
                         case 0:
-                        { clawAngle.clawAngle_i = 1; //1
+                        { clawAngle.clawAngle_i = BlueFar.clawanglefrompipeline; //1
                             clawAngle.CS = clawAngleController.clawAngleStatus.SCORE;
                             break;
                         }
@@ -532,10 +532,10 @@ public class RedFarAutoController {
                         case 1:
                         {
                             if(funny_or_notblue == false)
-                            {  clawAngle.clawAngle_i = 0;}
+                            {  clawAngle.clawAngle_i =  BlueFar.clawanglefrompipeline;}
                             else
                             {
-                                clawAngle.clawAngle_i = 1;
+                                clawAngle.clawAngle_i =  BlueFar.clawanglefrompipeline;
                             }
                             clawAngle.CS = clawAngleController.clawAngleStatus.SCORE;
                             break;
@@ -543,7 +543,7 @@ public class RedFarAutoController {
 
                         case 2:
                         {
-                            clawAngle.clawAngle_i = 0;
+                            clawAngle.clawAngle_i = BlueFar.clawanglefrompipeline;
                             clawAngle.CS = clawAngleController.clawAngleStatus.SCORE;
                             break;
                         }

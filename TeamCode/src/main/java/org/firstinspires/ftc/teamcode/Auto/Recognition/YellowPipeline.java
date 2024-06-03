@@ -1,5 +1,10 @@
 package org.firstinspires.ftc.teamcode.Auto.Recognition;
 
+import static org.firstinspires.ftc.teamcode.Auto.Recognition.YellowPipeline.location.center;
+import static org.firstinspires.ftc.teamcode.Auto.Recognition.YellowPipeline.location.left;
+import static org.firstinspires.ftc.teamcode.Auto.Recognition.YellowPipeline.location.none;
+import static org.firstinspires.ftc.teamcode.Auto.Recognition.YellowPipeline.location.right;
+
 import android.graphics.Canvas;
 
 import org.checkerframework.checker.units.qual.C;
@@ -18,10 +23,30 @@ import java.util.List;
 
 public class YellowPipeline implements VisionProcessor {
 
-    public int targetAprilTagID = 5;
-    public int yellowTreshold = 150;
+    public enum location{
+        left,
+        center,
+        right,
+        none,
+        nothing,
+    }
 
-    public String preloadedZone = "center"; //default
+    public enum Side{
+        blue,
+        red,
+        nothing,
+    }
+
+    public int targetAprilTagID = 5;
+    public int yellowTresholdLeftSide = 120; // treshold when the robot is in the left side / in front of the AprilTag
+    public int yellowTresholdRightSide = 85; // treshold when the robot is in the right side of the AprilTag; decreases to the right
+    public int yellowTresholdCenter = 80; // treshold when the pixel is on top of the AprilTag (center case)
+
+    public location preloadedZone = center; //default
+    boolean diditsee = false;
+   public Side side = Side.nothing;
+    public int clawpoz = 0;
+
 
     private AprilTagProcessor aprilTag;
 
@@ -29,9 +54,10 @@ public class YellowPipeline implements VisionProcessor {
     public Scalar leftInclusion = new Scalar(0, 0, 0);
     public Scalar rightInclusion = new Scalar(0, 0, 0);
 
-    public YellowPipeline(AprilTagProcessor aprilTag, int targetAprilTagID) {
+    public YellowPipeline(AprilTagProcessor aprilTag, int targetAprilTagID, boolean diditsee) {
         this.aprilTag = aprilTag;
         this.targetAprilTagID = targetAprilTagID;
+        this.diditsee = diditsee;
     }
 
     @Override
@@ -50,6 +76,8 @@ public class YellowPipeline implements VisionProcessor {
                     int rightX = Integer.MIN_VALUE;
                     int topY = Integer.MIN_VALUE;
                     int bottomY = Integer.MAX_VALUE;
+
+                    diditsee = true;
 
                     for (Point point : detection.corners) {
                         if (point.x < leftX) leftX = (int) point.x;
@@ -85,15 +113,35 @@ public class YellowPipeline implements VisionProcessor {
                     double leftInclusionPixels = (leftInclusion.val[0] + leftInclusion.val[2]) / 2;
                     double rightInclusionPixels = (rightInclusion.val[0] + rightInclusion.val[2]) / 2;
 
-                    if (leftInclusionPixels > yellowTreshold && (leftInclusion.val[0] + leftInclusion.val[3]) < leftInclusionPixels) {
-                        preloadedZone = "left";
-                    } else if (rightInclusionPixels > yellowTreshold && (rightInclusion.val[0] + rightInclusion.val[3]) < rightInclusionPixels) {
-                        preloadedZone = "right";
-                    } else if ((leftInclusionPixels > yellowTreshold && (leftInclusion.val[0] + leftInclusion.val[3]) < leftInclusionPixels) && (rightInclusionPixels > yellowTreshold && (rightInclusion.val[0] + rightInclusion.val[3]) < rightInclusionPixels)) {
-                        preloadedZone = "center";
+                    if (leftInclusionPixels > yellowTresholdRightSide && (leftInclusion.val[0] + leftInclusion.val[3]) > leftInclusionPixels) {
+                        preloadedZone = left;
+                    } else if (rightInclusionPixels > yellowTresholdRightSide && (rightInclusion.val[0] + rightInclusion.val[3]) > rightInclusionPixels) {
+                        preloadedZone = right;
+                    } else if ((leftInclusionPixels > yellowTresholdCenter && (leftInclusion.val[0] + leftInclusion.val[3]) > leftInclusionPixels) && (rightInclusionPixels > yellowTresholdCenter && (rightInclusion.val[0] + rightInclusion.val[3]) > rightInclusionPixels)) {
+                        preloadedZone = center;
                     } else {
-                        preloadedZone = "none";
+                        preloadedZone = none;
                     }
+
+                    if(side == Side.blue)
+                    {
+                        if(preloadedZone == left)
+                        { clawpoz = 3;}
+                        else
+                        {
+                            clawpoz = 1;
+                        }
+                    }  else{
+                        if(preloadedZone == left)
+                        {
+                            clawpoz = 1;
+                        } else
+                        {
+                            clawpoz = 3;
+                        }
+
+                    }
+
                 }
             }
         }

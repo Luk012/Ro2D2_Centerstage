@@ -2,6 +2,10 @@ package org.firstinspires.ftc.teamcode.Auto;
 
 
 
+import static org.firstinspires.ftc.teamcode.Auto.Recognition.YellowPipeline.Side.blue;
+
+import android.util.Size;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.outoftheboxrobotics.photoncore.Photon;
@@ -12,10 +16,12 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Auto.AutoControllers.RedFarAutoController;
 import org.firstinspires.ftc.teamcode.Auto.AutoControllers.failsafe;
 import org.firstinspires.ftc.teamcode.Auto.Recognition.BluePipelineStackMaster;
 
+import org.firstinspires.ftc.teamcode.Auto.Recognition.YellowPipeline;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.opmode.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.globals.robotMap;
@@ -33,6 +39,8 @@ import org.firstinspires.ftc.teamcode.system_controllers.latchRightController;
 import org.firstinspires.ftc.teamcode.system_controllers.liftController;
 
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 
 import java.util.List;
@@ -87,6 +95,8 @@ public class BlueFar extends LinearOpMode {
 
         NOTHING
     }
+
+    public static int clawanglefrompipeline  = 0;
 
     public static double x_start = -43, y_start = 61, angle_start = 90;
 
@@ -181,6 +191,8 @@ public class BlueFar extends LinearOpMode {
     boolean forced = false;
     public static int tries = 0;
     public static int tries_purple = 0;
+    private YellowPipeline yellowPipeline;
+    public static int desieredtag = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -597,27 +609,58 @@ public class BlueFar extends LinearOpMode {
         tries = 0;
         tries_purple =0;
 
+
+
+        boolean diditsee = false;
+
+
+        AprilTagProcessor aprilTag = new AprilTagProcessor.Builder()
+                .setDrawTagID(true)
+                .setDrawCubeProjection(true)
+                .setDrawTagOutline(true)
+                .build();
+
+
+
+
+        yellowPipeline = new YellowPipeline(aprilTag, desieredtag, diditsee);
+        yellowPipeline.side = blue;
+
+        VisionPortal visionPortal = new VisionPortal.Builder()
+                .addProcessor(aprilTag)
+                .addProcessor(yellowPipeline)
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .setCameraResolution(new Size(640, 480))
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                .build();
+
+
+
         while (!isStarted() && !isStopRequested()) {
 
             sleep(20);
             if(blueRight.opencvstack.getWhichSide() == "left"){
                 caz = 0;
+                desieredtag = 4;
             } else if (blueRight.opencvstack.getWhichSide() == "center") {
                 caz = 1;
+                desieredtag = 5;
             } else {
+                desieredtag = 6;
                 caz = 2;
             }
             telemetry.addData("case", blueRight.opencvstack.getWhichSide());
             telemetry.update();
+
             sleep(50);
         }
+
 
         waitForStart();
         park.reset();
 //        double[] rawReadings = {28.5, 27.3, 26.2, 24.9, 24.3, 23.6, 28.4, 29.5, 30.6, 31.2, 31.3, 31.6, 32.3, 33.4, 34.5, 35.3, 36.1, 37.8, 37.9, 38};
 //        double[] actualDistances = {23, 22, 21.5, 21, 20.5, 20, 22.5, 24, 24.4, 24.6, 25.2, 25.5, 26, 26.6, 27.2, 28.1, 28.9, 29.6, 30, 30.5};
 //        calibrator = new DistanceSensorCalibrator(rawReadings, actualDistances);
-
 
 
         if (isStopRequested()) return;
@@ -645,6 +688,7 @@ public class BlueFar extends LinearOpMode {
             switch (status) {
 
                 case START: {
+                    visionPortal.stopStreaming();
 
                     switch (caz)
                     {
@@ -843,9 +887,10 @@ public class BlueFar extends LinearOpMode {
                 }
 
                 case PREPARE_SCORE_YELLOW_v2:
-                {
-                    if(drive.getPoseEstimate().getX() >= 15 && redFarAutoController.CurrentStatus == RedFarAutoController.autoControllerStatus.TRANSFER_DONE)
+                {visionPortal.resumeStreaming();
+                    if(drive.getPoseEstimate().getX() >= 15 && redFarAutoController.CurrentStatus == RedFarAutoController.autoControllerStatus.TRANSFER_DONE && diditsee == true)
                     {
+                        clawanglefrompipeline = yellowPipeline.clawpoz;
                         redFarAutoController.CurrentStatus = RedFarAutoController.autoControllerStatus.SCORE_YELLOW_BEGIN_BLUE;
                         status = STROBOT.VERIF_PURPLE_SCORE;
                     }
@@ -857,7 +902,7 @@ public class BlueFar extends LinearOpMode {
                 {
                     if(drive.getPoseEstimate().getX() >= 44.4 && redFarAutoController.CurrentStatus == RedFarAutoController.autoControllerStatus.SCORE_YELLOW_DONE_BLUE)
                     {
-
+                        visionPortal.stopStreaming();
                         status = STROBOT.YELLOW_DROP;
                     }
                     break;

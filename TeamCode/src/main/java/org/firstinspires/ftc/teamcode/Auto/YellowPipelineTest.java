@@ -29,7 +29,9 @@ public class YellowPipelineTest extends LinearOpMode {
                 .setDrawTagOutline(true)
                 .build();
 
-        yellowPipeline = new YellowPipeline(aprilTag, 5);
+        boolean diditsee = false;
+//
+        yellowPipeline = new YellowPipeline(aprilTag, 5, diditsee);
 
         VisionPortal visionPortal = new VisionPortal.Builder()
                 .addProcessor(aprilTag)
@@ -43,8 +45,10 @@ public class YellowPipelineTest extends LinearOpMode {
 
             telemetry.addData("Status", "Initialized");
             telemetry.addData("location", yellowPipeline.preloadedZone);
-            telemetry.addData("right zone average: ", yellowPipeline.rightInclusion);
-            telemetry.addData("left zone average: ", yellowPipeline.leftInclusion);
+//            telemetry.addData("right zone average minim: ", (yellowPipeline.rightInclusion.val[0] + yellowPipeline.rightInclusion.val[2]) / 2);
+//            telemetry.addData("left zone average minim: ", (yellowPipeline.leftInclusion.val[0] + yellowPipeline.leftInclusion.val[2]) / 2);
+//            telemetry.addData("right zone average maxim: ", (yellowPipeline.rightInclusion.val[0] + yellowPipeline.rightInclusion.val[3]) / 2);
+//            telemetry.addData("left zone average maxim: ", (yellowPipeline.leftInclusion.val[0] + yellowPipeline.leftInclusion.val[3]) / 2);
             telemetry.update();
 
         }
@@ -55,8 +59,10 @@ public class YellowPipelineTest extends LinearOpMode {
 
             telemetry.addData("Status", "Initialized");
             telemetry.addData("location", yellowPipeline.preloadedZone);
-            telemetry.addData("right zone average: ", yellowPipeline.rightInclusion);
-            telemetry.addData("left zone average: ", yellowPipeline.leftInclusion);
+            telemetry.addData("right zone average minim: ", (yellowPipeline.rightInclusion.val[0] + yellowPipeline.rightInclusion.val[2]) / 2);
+            telemetry.addData("left zone average minim: ", (yellowPipeline.leftInclusion.val[0] + yellowPipeline.leftInclusion.val[2]) / 2);
+            telemetry.addData("right zone average maxim: ", (yellowPipeline.rightInclusion.val[0] + yellowPipeline.rightInclusion.val[3]) / 2);
+            telemetry.addData("left zone average maxim: ", (yellowPipeline.leftInclusion.val[0] + yellowPipeline.leftInclusion.val[3]) / 2);
             telemetry.update();
             sleep(100);
 
